@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import random
 import math
 
-'''For REFORM with k, time is neglected'''
-'''Tasks are assumed to be non-binary with answerspace={0,1,2}'''
+'''For REFORM with rho, time is neglected'''
+'''Tasks are assumed to be non-binary with answerspace = {0,1,2}'''
 
 rounds = 1000  # no.of rounds
 tasks = 50  # no.of tasks in each round
@@ -13,15 +13,16 @@ choices = 3  # no.of choices to report
 samples_count = tasks - 1
 
 reports = []    # agents' reports in a round
-TERMscore = []  # agents' TERM scores in a round
+PRIMEscore = []  # agents' PRIME scores in a round
 
 
 def flip(P):
-    ''' Flip randomly assigns 0 or 1 with prob 'p' '''
+    ''' Flip randomly assigns 0 or 1 with prob (p) '''
     return 1 if random.random() < P else 0
 
 
 def Report():
+  ''' Collecting reports submitted by trustworthy and random agents '''
   submn = []
   answers = list(range(choices))
   for _ in range(tasks):
@@ -75,8 +76,8 @@ def RPTSC(A, P, sample):
     return reward
 
 
-def TERM(curr_round, history):
-    ''' TERM scores calc: Returns TERMscore list of all the agents in a round '''
+def PRIME(curr_round, history):
+    ''' PRIME scores calc: Returns PRIMEscore list of all the agents in a round '''
     a = 1
     b = -1
     c = -0.5
@@ -111,18 +112,18 @@ def TERM(curr_round, history):
     rep_scores = []
     for A in range(agents):
         score = 0
-        for k in range(curr_round+1):
-          score = score+history[k][A]
+        for rho in range(curr_round+1):
+          score = score+history[rho][A]
         rep_scores.append(a*math.exp(b*math.exp(c*score)))  # repscores
 
     return rep_scores
 
 
-def REFORM(A, P, sample, k):
+def REFORM(A, P, sample, rho):
     ''' REFORM rewards '''
     alpha2 = 10
-    while k > 0:
-        k = k-1
+    while rho > 0:
+        rho = rho-1
         s = flip(0.6)
         if reports[A] == reports[P]:
             flag = 1
@@ -133,7 +134,7 @@ def REFORM(A, P, sample, k):
         if flag == 1:
             return alpha2*(flag/p - 1), alpha2*(1/p-1)
         else:
-            if TERMscore[A] < TERMscore[P] or k == 0 or (A == agents-1 and s == 1):
+            if PRIMEscore[A] < PRIMEscore[P] or rho == 0 or (A == agents-1 and s == 1):
                 if p == 0:
                     return 0, 0
                 else:
@@ -141,7 +142,7 @@ def REFORM(A, P, sample, k):
         P = Peer(A)
 
 
-def get_rewards(k):
+def get_rewards(rho):
     ''' Calc REFORM and RPTSC rewards for TA and RA '''
     ''' Returns: List of Optimal rewards, REFORM rewards for TA, '''
     ''' RPTSC rewards for TA, REFORM rewards for RA, RPTSC rewards for RA '''
@@ -161,11 +162,11 @@ def get_rewards(k):
     history = []    # 2D list for maintaining agents' history of scores
 
     for i in range(rounds):
-        print("1.Calculating rewards in round ", i, "for k = ", k)
+        print("1.Calculating rewards in round ", i, "for rho = ", rho)
         global reports
         reports = Report()
-        global TERMscore
-        TERMscore = TERM(i, history)
+        global PRIMEscore
+        PRIMEscore = PRIME(i, history)
 
         ''' reward for TA '''
         TA = 0
@@ -176,7 +177,7 @@ def get_rewards(k):
         Optimal += b2
         Optimal_list.append(Optimal/(i+1))
         RPSTC_TA_rewards.append(TA_RPTSC/(i+1))
-        a1, b1 = REFORM(TA, TA_Peer, TA_sample, k)
+        a1, b1 = REFORM(TA, TA_Peer, TA_sample, rho)
         TA_REFORM += a1
         Opt += b1
         Opt_list.append(Opt/(i+1))
@@ -189,15 +190,15 @@ def get_rewards(k):
         a3, b3 = RPTSC(RA, RA_Peer, RA_sample)
         RA_RPTSC += a3
         RPSTC_RA_rewards.append(RA_RPTSC/(i+1))
-        a, b = REFORM(RA, RA_Peer, RA_sample, k)
+        a, b = REFORM(RA, RA_Peer, RA_sample, rho)
         RA_REFORM += a
         Reform_RA_rewards.append(RA_REFORM / (i + 1))
     return np.array(Optimal_list), np.array(Reform_TA_rewards), np.array(RPSTC_TA_rewards), np.array(Reform_RA_rewards), np.array(RPSTC_RA_rewards), np.array(Opt_list)
 
 
 def plots(opt2, RT2, PT2, RR2, PR2, opt4, RT4, PT4, RR4, PR4, opt8, RT8, PT8, RR8, PR8, O1, O2, O3):
-    ''' Plotting the avg rewards of REFORM and RPTSC for different k's '''
-    print("plotting rewards for different ks")
+    ''' Plotting the avg rewards of REFORM and RPTSC for different rho's '''
+    print("plotting rewards for different rhos")
 
     R = np.array(list(range(rounds)))
     size = 20
@@ -205,37 +206,37 @@ def plots(opt2, RT2, PT2, RR2, PR2, opt4, RT4, PT4, RR4, PR4, opt8, RT8, PT8, RR
         2, 3, sharex=True, sharey=False)
     plt.rcParams["font.weight"] = "bold"
 
-    ax3.set_title("Trustworthy (k=2)", fontsize=size, fontweight='bold')
+    ax3.set_title("Trustworthy (rho=2)", fontsize=size, fontweight='bold')
     ax3.plot(R/10, np.divide(RT2, O1),  linestyle='-',
              color='tab:purple', label='N-REFORM', linewidth=5)
     ax3.plot(R/10, np.divide(PT2, opt2),  linestyle='--',
              color='tab:green', label='N-RPTSC', linewidth=5)
 
-    ax4.set_title("Random (k=2)", fontsize=size, fontweight='bold')
+    ax4.set_title("Random (rho=2)", fontsize=size, fontweight='bold')
     ax4.plot(R/10, np.divide(RR2, O1), linestyle='-',
              color='tab:purple', label='N-REFORM', linewidth=5)
     ax4.plot(R/10, np.divide(PR2, opt2), linestyle='--',
              color='tab:green', label='N-RPTSC', linewidth=5)
 
-    ax5.set_title("Trustworthy (k=4)", fontsize=size, fontweight='bold')
+    ax5.set_title("Trustworthy (rho=4)", fontsize=size, fontweight='bold')
     ax5.plot(R/10, np.divide(RT4, O2), linestyle='-',
              color='tab:purple', label='N-REFORM', linewidth=5)
     ax5.plot(R/10, np.divide(PT4, opt4), linestyle='--',
              color='tab:green', label='N-RPTSC', linewidth=5)
 
-    ax6.set_title("Random (k=4)",fontsize=size,fontweight='bold')
+    ax6.set_title("Random (rho=4)",fontsize=size,fontweight='bold')
     ax6.plot(R/10, np.divide(RR4, O2), linestyle='-',
              color='tab:purple', label='N-REFORM', linewidth=5)
     ax6.plot(R/10, np.divide(PR4, opt4), linestyle='--',
              color='tab:green', label='N-RPTSC', linewidth=5)
 
-    ax7.set_title("Trustworthy (k=6)", fontsize=size, fontweight='bold')
+    ax7.set_title("Trustworthy (rho=6)", fontsize=size, fontweight='bold')
     ax7.plot(R/10, np.divide(RT8, O3),  linestyle='-',
              color='tab:purple', label='N-REFORM', linewidth=5)
     ax7.plot(R/10, np.divide(PT8, opt8),  linestyle='--',
              color='tab:green', label='N-RPTSC', linewidth=5)
 
-    ax8.set_title("Random (k=6)",fontsize=size,fontweight='bold')
+    ax8.set_title("Random (rho=6)",fontsize=size,fontweight='bold')
     ax8.plot(R/10, np.divide(RR8, O3),  linestyle='-',
              color='tab:purple', label='N-REFORM', linewidth=5)
     ax8.plot(R/10, np.divide(PR8, opt8),  linestyle='--',
@@ -291,7 +292,7 @@ def main():
     RR8 = []
     PR8 = []
 
-    # getting avg rewards over 200 rounds for K = 2,4,6
+    # getting avg rewards over 200 rounds for rho = 2,4,6
     print("-------------------------------------------------------------------------------------")
     O2, RT2, PT2, RR2, PR2, O12 = get_rewards(2)
     print("-------------------------------------------------------------------------------------")
