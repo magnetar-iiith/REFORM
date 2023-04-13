@@ -1,9 +1,14 @@
-# Overview
-- In this code we simulate our crowdsourcing model.
-- We consider 1000 tasks, 750 available agents in each round
-- Tasks have an answer space = {0,1,2}
-- Alpha for REFORM and RPTSC is 10
-- We assume the available agents constitute 60% TAs, 40% RAs (other distributions can be similarly plugged-in)
+# REFORM: Iterative Fair Reward Framework for Crowdsourcing
+In this paper, we study the fairness of Peer-Based Mechanisms in a crowdsourcing setting. We observe that crowdsourcing settings with PBM rewards are not fair due to random matching and can discourage agents' participation. To tackle this, we build a general framework, REFORM, that assures fairness for PBMs. REFORM provides trustworthy agents with additional chances of pairing reducing the penalities agents receive from unfair-random matching. REFORM can adopt the reward scheme of any existing PBM and uses reputation models to quantify agents' trustworthiness across tasks.
+
+![REFORM](REFORM.png)
+
+# Experimental Evaluation
+- To demonstrate the significance of REFORM, we plug in RTPSC's reward scheme to it and we propose a reputation model PRIME to qunatity trustworthiness.
+- We simulate a crowdsourcing setting to evaluate the rewards agents obtain from REFORM and RPTSC (standard PBM)
+- We consider 750 agents and 1000 tasks with answer space = {0, 1, 2} in each round
+- The available agents constitute 60% trustworthy, 40% random agents (other distributions can be similarly plugged-in)
+- Scaling factor used in reward structure for REFORM and RPTSC is 10
 
 # Usage
 - Require Python3 environment
