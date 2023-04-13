@@ -11,7 +11,7 @@ In this paper, we study the fairness of Peer-Based Mechanisms in a crowdsourcing
 - Scaling factor used in reward structure for REFORM and RPTSC is 10
 - We run the experiments for $\rho = 2, 4, 6$ and observe that reward with REFORM framework are significantly fairer
 
-![simulation](results_60_40.png)
+![simulation](result_60_40.png)
 
 # Usage
 - Require Python3 environment
